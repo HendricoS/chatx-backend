@@ -1,6 +1,6 @@
 // Import necessary libraries and modules
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+const bcryptjs = require("bcryptjs");
 const User = require("../models/userModel");
 
 // Secret key for JWT
