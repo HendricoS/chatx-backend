@@ -78,7 +78,7 @@ router.post("/login", async (req, res) => {
     }
 
     // Check if the hashed password matches the stored hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcryptjs.compare(password, user.password);
 
     if (passwordMatch) {
       // Generate a JWT token for the user
@@ -178,11 +178,11 @@ router.post("/password-change", checkJWTToken, async (req, res) => {
     }
 
     // Check if the old password matches the stored hashed password
-    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    const passwordMatch = await bcryptjs.compare(oldPassword, user.password);
 
     if (passwordMatch) {
       // Hash the new password before saving it
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
 
       // Update the user's password in the database
       await User.findOneAndUpdate({ username }, { password: hashedPassword });
@@ -216,7 +216,7 @@ router.post("/admin-login", async (req, res) => {
     }
 
     // Check if the hashed password matches the stored hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcryptjs.compare(password, user.password);
 
     if (passwordMatch) {
       // Generate a JWT token with admin role

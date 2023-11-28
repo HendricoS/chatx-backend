@@ -1,6 +1,6 @@
 // Import necessary libraries
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // Define the schema for the 'users' collection
 const userSchema = new mongoose.Schema({
@@ -20,7 +20,7 @@ userSchema.pre("save", async function (next) {
   // Check if the password field is modified before hashing
   if (user.isModified("password")) {
     // Hash the password using bcrypt with a cost factor of 10
-    user.password = await bcrypt.hash(user.password, 10);
+    user.password = await bcryptjs.hash(user.password, 10);
   }
 
   // Continue to the next middleware or save operation

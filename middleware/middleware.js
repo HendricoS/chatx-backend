@@ -1,6 +1,6 @@
 // Import necessary libraries and modules
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 
 // Secret key for JWT
@@ -63,11 +63,11 @@ async function changePasswordVerification(req, res, next) {
     }
 
     // Check if the old password matches the stored hashed password
-    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    const passwordMatch = await bcryptjs.compare(oldPassword, user.password);
 
     if (passwordMatch) {
       // Hash the new password before saving it
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
 
       // Update the user's password in the database
       await User.findOneAndUpdate(
