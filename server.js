@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "https://chatx-frontend.onrender.com", // Vercel app domain
+      "https://chatx-frontend.onrender.com", // Render app domain
       "http://localhost:3000", // Local host domain
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
