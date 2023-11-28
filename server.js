@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "https://chatx-cy3b.onrender.com", // Vercel app domain
+      "https://chatx-app.vercel.app/", // Vercel app domain
       "http://localhost:3000", // Local host domain
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
