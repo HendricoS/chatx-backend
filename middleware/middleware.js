@@ -7,7 +7,7 @@ const User = require("../models/userModel");
 const secretKey = "ch@tx@4212";
 
 // Middleware to check JWT token for authentication
-async function checkJWTToken(req, res, next) {
+function checkJWTToken(req, res, next) {
   // Extract token from Authorization header
   const token = req.header("Authorization");
   console.log("Received Token:", token); // Debugging

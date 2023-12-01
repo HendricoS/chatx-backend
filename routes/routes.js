@@ -16,52 +16,7 @@ const {
 // Define the secretKey for JWT
 const secretKey = "ch@tx@4212";
 
-// // POST route for user registration
-// router.post(
-//   "/register",
-//   otherMiddlewares.checkUsernameDomain, // Middleware: Check username domain
-//   otherMiddlewares.checkContentType, // Middleware: Check content type
-//   async (req, res) => {
-//     try {
-//       const { username, password } = req.body;
-
-//       console.log("Received registration request:", username);
-
-//       // Check if the user already exists
-//       const existingUser = await User.findOne({ username });
-//       if (existingUser) {
-//         console.log("User already exists", username);
-//         return res.status(409).json({ message: "User already exists" });
-//       }
-
-//       // Create a new user with the default role "user"
-//       const newUser = new User({ username, password, role: "user" });
-//       await newUser.save();
-
-//       console.log("User registered successfully", username);
-
-//       // Generate a JWT token for the new user
-//       const jwtToken = jwt.sign(
-//         { username, password, role: newUser.role },
-//         secretKey,
-//         {
-//           expiresIn: "1h",
-//         }
-//       );
-
-//       res.status(201).json({
-//         message: "User registered successfully",
-//         token: jwtToken,
-//         role: newUser.role,
-//       });
-//     } catch (error) {
-//       console.error("Registration error:", error);
-//       res
-//         .status(500)
-//         .json({ message: "Internal Server Error", error: error.message });
-//     }
-//   }
-// );
+// POST route for user registration
 router.post(
   "/register",
   otherMiddlewares.checkUsernameDomain,
@@ -70,6 +25,8 @@ router.post(
     try {
       const { username, password, isAdmin } = req.body;
 
+      console.log("Received registration request:", username);
+
       // Check if the user already exists
       const existingUser = await User.findOne({ username });
       if (existingUser) {
@@ -77,17 +34,12 @@ router.post(
         return res.status(409).json({ message: "User already exists" });
       }
 
-      // Set the role based on isAdmin checkbox
-      const role = isAdmin ? "admin" : "user";
-
-      // Create a new user with the determined role
+      // Create a new user with the default role "user" or "admin" based on the checkbox
       const newUser = new User({
         username,
         password,
-        role,
-        isAdmin, // Add isAdmin field to the user model
+        role: isAdmin ? "admin" : "user",
       });
-
       await newUser.save();
 
       console.log("User registered successfully", username);
@@ -253,6 +205,7 @@ router.post("/password-change", checkJWTToken, async (req, res) => {
   }
 });
 
+// POST route for admin login
 router.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -269,27 +222,23 @@ router.post("/admin-login", async (req, res) => {
     // Check if the hashed password matches the stored hashed password
     const passwordMatch = await bcryptjs.compare(password, user.password);
 
-    if (passwordMatch) {
-      // Check if the user has the admin role
-      if (user.isAdmin) {
-        // Generate a JWT token with admin role
-        const jwtToken = jwt.sign(
-          { username, password, role: "admin" },
-          secretKey,
-          {
-            expiresIn: "1h",
-          }
-        );
-        return res.json({ token: jwtToken, role: "admin" });
-      } else {
-        return res
-          .status(403)
-          .json({ message: "Forbidden: Admin access only" });
-      }
+    if (passwordMatch && user.role === "admin") {
+      // Generate a JWT token with admin role
+      const jwtToken = jwt.sign(
+        { username, password, role: "admin" },
+        secretKey,
+        {
+          expiresIn: "1h",
+        }
+      );
+
+      return res.json({ token: jwtToken, role: "admin" });
     } else {
       return res
         .status(401)
-        .json({ message: "Invalid credentials - Password mismatch" });
+        .json({
+          message: "Invalid credentials - Password mismatch or not an admin",
+        });
     }
   } catch (error) {
     console.error(error);
@@ -321,16 +270,11 @@ router.get("/admin/users", checkJWTToken, async (req, res) => {
 });
 
 // DELETE route for deleting a user (admin access only)
-router.delete("/admin/users/:userId", checkJWTToken, async (req, res) => {
+router.delete("/admin/users/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  console.log("Received delete request for user ID:", userId);
+
   try {
-    // Check if the user is an admin
-    if (!req.isAdmin) {
-      return res.status(403).json({ message: "Forbidden: Admin access only" });
-    }
-
-    const userId = req.params.userId;
-    console.log("Received delete request for user ID:", userId);
-
     // Perform deletion logic here (e.g., using Mongoose)
     await User.findByIdAndDelete(userId);
 
