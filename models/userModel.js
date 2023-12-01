@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   // Password required for each user
   password: { type: String, required: true },
   // User role, can be 'user' or 'admin', default is 'user'
-  role: { type: String, enum: ["user", "admin"], default: "user" },
+  isAdmin: { type: Boolean, default: false },
 });
 
 // Middleware: Hash the password before saving it to the database
