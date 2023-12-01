@@ -30,5 +30,21 @@ userSchema.pre("save", async function (next) {
 // Create a Mongoose model named 'User' using the defined schema
 const User = mongoose.model("User", userSchema);
 
+// Export a function to register a new user with isAdmin option
+module.exports.registerUser = async function (userData) {
+  try {
+    // Create a new user instance
+    const user = new User(userData);
+
+    // Save the user to the database
+    await user.save();
+
+    // Return the newly created user
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Export the 'User' model for use in other parts of the application
 module.exports = User;
