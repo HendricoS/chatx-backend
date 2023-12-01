@@ -62,7 +62,6 @@ const secretKey = "ch@tx@4212";
 //     }
 //   }
 // );
-// POST route for user registration
 router.post(
   "/register",
   otherMiddlewares.checkUsernameDomain,
@@ -70,8 +69,6 @@ router.post(
   async (req, res) => {
     try {
       const { username, password, isAdmin } = req.body;
-
-      console.log("Received registration request:", username);
 
       // Check if the user already exists
       const existingUser = await User.findOne({ username });
@@ -256,7 +253,6 @@ router.post("/password-change", checkJWTToken, async (req, res) => {
   }
 });
 
-// POST route for admin login
 router.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -278,7 +274,7 @@ router.post("/admin-login", async (req, res) => {
       if (user.isAdmin) {
         // Generate a JWT token with admin role
         const jwtToken = jwt.sign(
-          { username, password, role: "admin" }, // Hardcode role as "admin"
+          { username, password, role: "admin" },
           secretKey,
           {
             expiresIn: "1h",
