@@ -16,14 +16,60 @@ const {
 // Define the secretKey for JWT
 const secretKey = "ch@tx@4212";
 
+// // POST route for user registration
+// router.post(
+//   "/register",
+//   otherMiddlewares.checkUsernameDomain, // Middleware: Check username domain
+//   otherMiddlewares.checkContentType, // Middleware: Check content type
+//   async (req, res) => {
+//     try {
+//       const { username, password } = req.body;
+
+//       console.log("Received registration request:", username);
+
+//       // Check if the user already exists
+//       const existingUser = await User.findOne({ username });
+//       if (existingUser) {
+//         console.log("User already exists", username);
+//         return res.status(409).json({ message: "User already exists" });
+//       }
+
+//       // Create a new user with the default role "user"
+//       const newUser = new User({ username, password, role: "user" });
+//       await newUser.save();
+
+//       console.log("User registered successfully", username);
+
+//       // Generate a JWT token for the new user
+//       const jwtToken = jwt.sign(
+//         { username, password, role: newUser.role },
+//         secretKey,
+//         {
+//           expiresIn: "1h",
+//         }
+//       );
+
+//       res.status(201).json({
+//         message: "User registered successfully",
+//         token: jwtToken,
+//         role: newUser.role,
+//       });
+//     } catch (error) {
+//       console.error("Registration error:", error);
+//       res
+//         .status(500)
+//         .json({ message: "Internal Server Error", error: error.message });
+//     }
+//   }
+// );
 // POST route for user registration
 router.post(
   "/register",
-  otherMiddlewares.checkUsernameDomain, // Middleware: Check username domain
-  otherMiddlewares.checkContentType, // Middleware: Check content type
+  otherMiddlewares.checkUsernameDomain,
+  otherMiddlewares.checkContentType,
   async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, role } = req.body;
 
       console.log("Received registration request:", username);
 
@@ -34,8 +80,14 @@ router.post(
         return res.status(409).json({ message: "User already exists" });
       }
 
-      // Create a new user with the default role "user"
-      const newUser = new User({ username, password, role: "user" });
+      // Validate and set the role during registration
+      const validRoles = ["user", "admin"];
+      const newUser = new User({
+        username,
+        password,
+        role: validRoles.includes(role) ? role : "user",
+      });
+
       await newUser.save();
 
       console.log("User registered successfully", username);
@@ -219,6 +271,13 @@ router.post("/admin-login", async (req, res) => {
     const passwordMatch = await bcryptjs.compare(password, user.password);
 
     if (passwordMatch) {
+      // Check if the user has the admin role
+      if (user.role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "Forbidden: Admin access only" });
+      }
+
       // Generate a JWT token with admin role
       const jwtToken = jwt.sign(
         { username, password, role: "admin" }, // Hardcode role as "admin"
