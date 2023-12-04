@@ -133,17 +133,8 @@ router.post("/messages", checkJWTToken, async (req, res) => {
 // GET route for retrieving user's messages, protected by JWT authentication
 router.get("/messages", checkJWTToken, async (req, res) => {
   try {
-    let userMessages;
-
-    // Check the user's role
-    if (req.decodedToken.role === "admin") {
-      // If the user is an admin, retrieve all messages
-      userMessages = await Message.find();
-    } else {
-      // If the user is not an admin, retrieve only their own messages
-      userMessages = await Message.find({ sender: req.username });
-    }
-
+    // Retrieve messages based on the logged-in user
+    const userMessages = await Message.find(); // { sender: req.username }
     res.json(userMessages);
   } catch (error) {
     console.error(error);
@@ -161,7 +152,7 @@ router.delete("/messages/:messageId", checkJWTToken, async (req, res) => {
     // Find the message and remove it
     const deletedMessage = await Message.findOneAndDelete({
       _id: messageId,
-      sender: req.username, // Ensure that the user can only delete their own messages
+      // sender: req.username,
     });
 
     if (deletedMessage) {
@@ -244,7 +235,6 @@ router.post("/admin-login", async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 });
-
 // Admin Routes
 // GET route for fetching all users (admin access only)
 router.get("/admin/users", checkJWTToken, async (req, res) => {
