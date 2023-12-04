@@ -133,8 +133,17 @@ router.post("/messages", checkJWTToken, async (req, res) => {
 // GET route for retrieving user's messages, protected by JWT authentication
 router.get("/messages", checkJWTToken, async (req, res) => {
   try {
-    // Retrieve messages based on the logged-in user
-    const userMessages = await Message.find(); // { sender: req.username }
+    let userMessages;
+
+    // Check the user's role
+    if (req.decodedToken.role === "admin") {
+      // If the user is an admin, retrieve all messages
+      userMessages = await Message.find();
+    } else {
+      // If the user is not an admin, retrieve only their own messages
+      userMessages = await Message.find({ sender: req.username });
+    }
+
     res.json(userMessages);
   } catch (error) {
     console.error(error);
@@ -152,7 +161,7 @@ router.delete("/messages/:messageId", checkJWTToken, async (req, res) => {
     // Find the message and remove it
     const deletedMessage = await Message.findOneAndDelete({
       _id: messageId,
-      // sender: req.username,
+      sender: req.username, // Ensure that the user can only delete their own messages
     });
 
     if (deletedMessage) {
@@ -210,20 +219,9 @@ router.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Check if the user exists
-    const user = await User.findOne({ username });
-
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials - User not found" });
-    }
-
-    // Check if the hashed password matches the stored hashed password
-    const passwordMatch = await bcryptjs.compare(password, user.password);
-
-    if (passwordMatch && user.role === "admin") {
-      // Generate a JWT token with admin role
+    // Check if the user is attempting to log in as admin with hardcoded credentials
+    if (username === "admin@gmail.com" && password === "admin1234") {
+      // Allow login as admin with hardcoded credentials
       const jwtToken = jwt.sign(
         { username, password, role: "admin" },
         secretKey,
@@ -234,11 +232,10 @@ router.post("/admin-login", async (req, res) => {
 
       return res.json({ token: jwtToken, role: "admin" });
     } else {
-      return res
-        .status(401)
-        .json({
-          message: "Invalid credentials - Password mismatch or not an admin",
-        });
+      // Reject login attempts for non-admin users
+      return res.status(401).json({
+        message: "Invalid credentials - Password mismatch or not an admin",
+      });
     }
   } catch (error) {
     console.error(error);

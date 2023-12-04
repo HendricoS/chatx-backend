@@ -15,9 +15,8 @@ function checkJWTToken(req, res, next) {
   // Check if the request path is for registration, login, or admin-login
   if (
     req.path === "/register" ||
-    req.path === "/login"
-    // ||
-    // req.path === "/admin-login"
+    req.path === "/login" ||
+    req.path === "/admin-login"
   ) {
     // Skip token verification and proceed with registration logic
     return next();
